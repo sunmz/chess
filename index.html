@@ -1,0 +1,146 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Chess Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font: 13px Helvetica, Arial;
+        }
+        /*chess*/
+        .chess {
+            position: relative;
+            overflow: hidden;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto;
+            background: #ccc;
+        }
+        #canvaschess1 {
+            position: absolute;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+        #canvaschess2 {
+            position: absolute;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+        #canvaschess3 {
+            position: absolute;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+        .chessstyle {
+            position: relative;
+            text-align: center;
+            width: 400px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+        .chessstyle button {
+            width: 70px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 5px;
+            background: #fff;
+        }
+        .chessstyle .blackchess {
+            background: #000;
+            color: #fff;
+        }
+    </style>
+     
+     
+     
+    <!--棋盘-->
+    <div class="chess">
+        <canvas width="360" id="canvaschess1" height="360">你的浏览器不支持HTML5 canvas，请换高级浏览器</canvas>
+        <canvas width="360" id="canvaschess3" height="360">你的浏览器不支持HTML5 canvas，请换高级浏览器</canvas>
+        <canvas width="360" id="canvaschess2" height="360">你的浏览器不支持HTML5 canvas，请换高级浏览器</canvas>
+    </div>
+    <div class="chessstyle">
+        <button class="whitechess" id="wBtn">白棋</button>
+        <button class="blackchess" id="bBtn">黑棋</button>
+    </div>
+    <script type="text/javascript" src="web/Drawer.js "></script>
+     
+    <script>
+        var draw = new Drawer();
+
+        var game = {
+            initialize:function(){
+                //  初始化
+                this.wBtn = document.getElementById('wBtn');
+                this.bBtn = document.getElementById('bBtn');
+
+                //  画布事件绑定
+                draw.canvas2.addEventListener("mousedown",this.OnMouseDown.bind(this),false);
+                draw.canvas2.addEventListener("mousemove",this.OnMouseMove.bind(this),false);
+                draw.canvas2.addEventListener("mouseup",this.OnMouseUp.bind(this),false);
+                 
+                //  切换棋子颜色按钮事件绑定
+                this.wBtn.addEventListener('click',function(){
+                    draw.state = 'white';
+                },false);
+                this.bBtn.addEventListener('click',function(){
+                    draw.state = 'black';
+                },false);
+
+                //  双击移除棋子
+                draw.canvas2.ondblclick = function(e){
+                    var loc = draw.windowToCanvas(e.clientX, e.clientY);
+                    var coo = draw.coordinateOnCanvas(loc.x, loc.y);
+                    draw.delChess(coo.x,coo.y);
+                }
+            },
+            OnMouseMove:function(evt){
+                var finalLoc = draw.finalLoc;
+                if(draw.click){
+                    draw.isMove = true;
+                    draw.delChess(finalLoc.x,finalLoc.y);
+                    var loc = draw.windowToCanvas(evt.clientX, evt.clientY);
+                    draw.draw(loc.x - 20,loc.y -20,finalLoc.state);
+                }
+            },
+            OnMouseDown:function(evt){
+                var loc = draw.windowToCanvas(evt.clientX, evt.clientY);
+                var coo = draw.coordinateOnCanvas(loc.x, loc.y);
+                coo.state = draw.state;
+               
+                //如果该点没有棋子
+                if(!draw.hasChess(coo.x,coo.y)){
+                    draw.drawChess(coo.x,coo.y,draw.state);     //在当前的点画棋子
+                }else{  //如果该点有棋子
+                    coo.state = draw.board[coo.x][coo.y] === 1 ? 'black' : 'white';
+                    draw.click = true;
+                }
+
+                draw.finalLoc = coo;    //将当前的点的信息存储下来
+            },
+            OnMouseUp:function(evt){
+                draw.click = false;
+                var loc = draw.windowToCanvas(evt.clientX, evt.clientY);
+                var coo = draw.coordinateOnCanvas(loc.x, loc.y);
+                var finalLoc = draw.finalLoc;
+
+                //如果该点没有棋子
+                if(!draw.hasChess(coo.x,coo.y)){
+                    draw.drawChess(coo.x,coo.y,finalLoc.state);
+                    draw.cObj3.clearRect(0, 0, draw.canvas1.width, draw.canvas1.height);
+                }else{  //如果该点有棋子
+                    if(draw.isMove){    //如果当前是处于移动状态，则将棋子放回原处
+                        draw.drawChess(finalLoc.x,finalLoc.y,finalLoc.state);
+                        draw.cObj3.clearRect(0, 0, draw.canvas1.width, draw.canvas1.height);
+                    }
+                }
+                draw.isMove = false;
+            }
+        }
+        game.initialize();
+    </script>
+  </body>
+</html>
